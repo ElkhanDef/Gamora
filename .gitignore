@@ -1,0 +1,53 @@
+# Build results
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Ll]og/
+[Ll]ogs/
+out/
+
+# Visual Studio
+.vs/
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.pidb
+*.sln.docstates
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+riderModule.iml
+/_ReSharper.Caches/
+
+# NuGet
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+*.nuget.props
+*.nuget.targets
+
+# Test results
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+*.coveragexml
+
+# Publish / packaging
+*.pubxml
+*.publishsettings
+publish/
+PublishScripts/
+
+# Rider / VS Code misc
+*.DotSettings.user
+.vscode/
+
+# OS files
+Thumbs.db
+.DS_Store
