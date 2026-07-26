@@ -10,9 +10,15 @@
                  Title="Gamora"
                  WindowState="Maximized"
                  ExtendsContentIntoTitleBar="True"
-                 Background="{StaticResource AppBackgroundBrush}">
+                 Background="{StaticResource AppBackgroundBrush}"
+                 PreviewTextInput="OnWindowPreviewTextInput">
+    <ui:FluentWindow.InputBindings>
+        <KeyBinding Key="Escape" Command="{Binding ClearSearchCommand}" />
+    </ui:FluentWindow.InputBindings>
+
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -60,8 +66,64 @@
             </Border>
         </Grid>
 
+        <!-- Arama + kategori sekmeleri -->
+        <StackPanel Grid.Row="1" Margin="24,14,24,0">
+            <ui:TextBox x:Name="SearchBox"
+                        Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                        PlaceholderText="Oyun ara..."
+                        Icon="{ui:SymbolIcon Symbol=Search24}"
+                        ClearButtonEnabled="True"
+                        Width="360"
+                        HorizontalAlignment="Left" />
+
+            <ListBox ItemsSource="{Binding Categories}"
+                     SelectedItem="{Binding SelectedCategory}"
+                     Background="Transparent"
+                     BorderThickness="0"
+                     Margin="0,10,0,0"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="Padding" Value="16,7" />
+                        <Setter Property="Margin" Value="0,0,10,10" />
+                        <Setter Property="FontSize" Value="13" />
+                        <Setter Property="Cursor" Value="Hand" />
+                        <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListBoxItem">
+                                    <Border x:Name="Chip"
+                                            Background="{StaticResource CardBackgroundBrush}"
+                                            BorderThickness="1"
+                                            BorderBrush="Transparent"
+                                            Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="Chip" Property="Background" Value="{StaticResource AccentBrush}" />
+                                            <Setter Property="Foreground" Value="White" />
+                                        </Trigger>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Chip" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+            </ListBox>
+        </StackPanel>
+
         <!-- Vitrin: en popüler (şimdilik ilk) oyun -->
-        <Border Grid.Row="1"
+        <Border Grid.Row="2"
                 Height="170"
                 Margin="24,12,24,8"
                 Background="{StaticResource HeroBackgroundBrush}"
@@ -128,8 +190,8 @@
             </Grid>
         </Border>
 
-        <ListView Grid.Row="2"
-                  ItemsSource="{Binding Games}"
+        <ListView Grid.Row="3"
+                  ItemsSource="{Binding GamesView}"
                   Background="Transparent"
                   BorderThickness="0"
                   Padding="10,0,10,12"
@@ -163,5 +225,26 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
+
+        <StackPanel Grid.Row="3"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Visibility="{Binding GamesView.IsEmpty, Converter={StaticResource BoolToVisibilityConverter}}">
+            <TextBlock Text="Oyun bulunamadı"
+                       FontFamily="{StaticResource RajdhaniFont}"
+                       FontSize="24"
+                       HorizontalAlignment="Center"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+            <Button Content="Aramayı temizle"
+                    Command="{Binding ClearSearchCommand}"
+                    Padding="20,10"
+                    Margin="0,16,0,0"
+                    HorizontalAlignment="Center"
+                    Cursor="Hand"
+                    Foreground="{StaticResource AccentBrush}"
+                    BorderThickness="1"
+                    BorderBrush="{StaticResource AccentBrush}"
+                    Background="Transparent" />
+        </StackPanel>
     </Grid>
 </ui:FluentWindow>

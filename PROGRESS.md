@@ -51,8 +51,32 @@ Kısa, tarihli günlük. Her önemli adımdan sonra güncellenir.
   başlatılıp çökmeden katalog yüklediği doğrulandı. **Kullanıcı görsel olarak inceledi ve
   onayladı** (2026-07-26).
 
+## 2026-07-26 — Anlık arama + kategori filtresi
+
+- **Filtreleme mimarisi:** `MainViewModel.GamesView` (`ICollectionView`, `CollectionViewSource.
+  GetDefaultView(Games)`) — ikinci bir filtrelenmiş `ObservableCollection` değil. Sebep: `Games`
+  tek gerçek kaynak kalıyor; `Refresh()` sadece eşleşme durumu değişen kartların container'ını
+  oluşturup söküyor (hâlâ eşleşenler yeniden animasyonlanmıyor, sadece yeni eşleşenler fade-in
+  ile beliriyor); `VirtualizingWrapPanel` filtrelenmiş view üzerinden çalışıyor, virtualization
+  bozulmuyor.
+- **Türkçe-toleranslı arama:** `Gamora.Core/Services/TurkishSearch.cs` — kültüre bağımlı
+  `ToLower()`'ın Türkçe kültüründe "FIFA"yı "fıfa" yapması gibi tuzaklara düşmeden, karakter
+  karakter eşleme (I/İ/ı/i→i, ş→s, ğ→g, ü→u, ö→o, ç→c). 6 xUnit testiyle doğrulandı.
+- **Arama kutusu:** `ui:TextBox`, her tuşta `SearchText` güncelleniyor (`UpdateSourceTrigger=
+  PropertyChanged`), 180ms debounce'lu `DispatcherTimer` gerçek filtrelemeyi tetikliyor.
+- **Kategori sekmeleri:** `ListBox` + `SelectedItem` iki yönlü bağlama, pill görünümü
+  `ControlTemplate.Triggers` ile (seçiliyken vurgu moru dolgu). Kategori + arama kesişim olarak
+  birlikte çalışıyor (`MatchesFilter`).
+- **Boş sonuç:** `GamesView.IsEmpty`'e bağlı "Oyun bulunamadı" + anında temizleyen
+  `ClearSearchCommand` butonu.
+- **Klavye:** Griddeyken yazmaya başlayınca odak otomatik arama kutusuna geçiyor
+  (`MainWindow.xaml.cs`, `PreviewTextInput`); ESC, `Window.InputBindings` üzerinden
+  `ClearSearchCommand`'a bağlı (code-behind gerekmedi).
+- **Doğrulama:** `dotnet build` temiz, `dotnet test` 10/10 yeşil (4 eski + 6 yeni). Uygulama
+  arkaplanda kısaca çalıştırılıp çökme olmadığı doğrulandı. **Kullanıcı görsel/etkileşim olarak
+  inceledi ve onayladı** (2026-07-26).
+
 ### Sıradaki adımlar (henüz yapılmadı)
-- Arama kutusu ve kategori filtresi.
 - `PathResolver` (`{GAMEDISK}` çözümü), `IGameLauncher` (exe/steam/riot/battlenet/epic başlatma).
 - `IStatsService` (stats/{MachineName}.jsonl).
 - Admin modu (`--admin`), oyun CRUD, kapak yükleme.

@@ -30,6 +30,7 @@
             <FontFamily x:Key="RajdhaniFont">pack://application:,,,/Gamora.App;component/Assets/Fonts/#Rajdhani</FontFamily>
 
             <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+            <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>
