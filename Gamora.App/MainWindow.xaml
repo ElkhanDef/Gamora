@@ -246,5 +246,90 @@
                     BorderBrush="{StaticResource AccentBrush}"
                     Background="Transparent" />
         </StackPanel>
+
+        <!-- Başlatılıyor / hata katmanı: tam ekran, yarı saydam koyu -->
+        <Grid Grid.Row="0" Grid.RowSpan="4"
+              Background="#CC0E1015"
+              Visibility="{Binding IsOverlayVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="480">
+                <StackPanel HorizontalAlignment="Center"
+                            Visibility="{Binding IsOverlayLaunching, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Ellipse Width="10" Height="10" Fill="{StaticResource AccentBrush}" Margin="4,0" Opacity="0.4">
+                            <Ellipse.Triggers>
+                                <EventTrigger RoutedEvent="Ellipse.Loaded">
+                                    <BeginStoryboard>
+                                        <Storyboard RepeatBehavior="Forever">
+                                            <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0.3" To="1" Duration="0:0:0.5" AutoReverse="True" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </Ellipse.Triggers>
+                        </Ellipse>
+                        <Ellipse Width="10" Height="10" Fill="{StaticResource AccentBrush}" Margin="4,0" Opacity="0.4">
+                            <Ellipse.Triggers>
+                                <EventTrigger RoutedEvent="Ellipse.Loaded">
+                                    <BeginStoryboard>
+                                        <Storyboard RepeatBehavior="Forever" BeginTime="0:0:0.15">
+                                            <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0.3" To="1" Duration="0:0:0.5" AutoReverse="True" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </Ellipse.Triggers>
+                        </Ellipse>
+                        <Ellipse Width="10" Height="10" Fill="{StaticResource AccentBrush}" Margin="4,0" Opacity="0.4">
+                            <Ellipse.Triggers>
+                                <EventTrigger RoutedEvent="Ellipse.Loaded">
+                                    <BeginStoryboard>
+                                        <Storyboard RepeatBehavior="Forever" BeginTime="0:0:0.3">
+                                            <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0.3" To="1" Duration="0:0:0.5" AutoReverse="True" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </EventTrigger>
+                            </Ellipse.Triggers>
+                        </Ellipse>
+                    </StackPanel>
+                    <TextBlock Text="BAŞLATILIYOR"
+                               FontFamily="{StaticResource RajdhaniFont}"
+                               FontSize="16"
+                               Foreground="{StaticResource AccentBrush}"
+                               HorizontalAlignment="Center"
+                               Margin="0,16,0,4" />
+                    <TextBlock Text="{Binding OverlayGameName}"
+                               FontFamily="{StaticResource RajdhaniFont}"
+                               FontSize="28"
+                               Foreground="White"
+                               HorizontalAlignment="Center" />
+                </StackPanel>
+
+                <StackPanel HorizontalAlignment="Center"
+                            Visibility="{Binding IsOverlayError, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <TextBlock Text="{Binding OverlayErrorMessage}"
+                               FontSize="18"
+                               Foreground="White"
+                               TextAlignment="Center"
+                               TextWrapping="Wrap"
+                               HorizontalAlignment="Center" />
+                    <Button Content="Tamam"
+                            Command="{Binding DismissOverlayCommand}"
+                            Padding="24,10"
+                            Margin="0,20,0,0"
+                            HorizontalAlignment="Center"
+                            Cursor="Hand"
+                            Foreground="White"
+                            BorderThickness="0">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{StaticResource AccentBrush}">
+                                    <ContentPresenter HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"
+                                                      Margin="{TemplateBinding Padding}" />
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
     </Grid>
 </ui:FluentWindow>

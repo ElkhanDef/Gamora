@@ -10,20 +10,31 @@ namespace Gamora.App.ViewModels;
 
 public partial class GameViewModel : ObservableObject
 {
+    // Başlatma "başarıyla" bitse bile (URI tabanlı, çok hızlı) kart en az bu kadar kilitli
+    // kalır — arka arkaya çift tıklamayla aynı oyunun iki kez açılmasını engeller.
+    private static readonly TimeSpan MinimumLockDuration = TimeSpan.FromSeconds(3.5);
+
     private readonly Game _game;
     private readonly string _coverFullPath;
+    private readonly Func<GameViewModel, Task> _requestLaunch;
     private bool _coverLoadStarted;
 
     [ObservableProperty]
     private ImageSource? _coverImage;
 
-    public GameViewModel(Game game, string coversDirectory)
+    [ObservableProperty]
+    private bool _isLaunching;
+
+    public GameViewModel(Game game, string coversDirectory, Func<GameViewModel, Task> requestLaunch)
     {
         _game = game;
+        _requestLaunch = requestLaunch;
         _coverFullPath = string.IsNullOrWhiteSpace(game.Cover)
             ? ""
             : Path.Combine(coversDirectory, Path.GetFileName(game.Cover));
     }
+
+    public Game Model => _game;
 
     public string Name => _game.Name;
 
@@ -74,8 +85,18 @@ public partial class GameViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void Select()
+    private async Task SelectAsync()
     {
-        Log.Information("Oyun seçildi: {GameName}", Name);
+        IsLaunching = true;
+        try
+        {
+            var minimumLock = Task.Delay(MinimumLockDuration);
+            var launch = _requestLaunch(this);
+            await Task.WhenAll(launch, minimumLock);
+        }
+        finally
+        {
+            IsLaunching = false;
+        }
     }
 }

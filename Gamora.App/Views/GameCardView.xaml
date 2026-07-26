@@ -156,6 +156,11 @@
                                    TextTrimming="CharacterEllipsis"
                                    Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                     </StackPanel>
+
+                    <!-- Başlatma kilidi: aynı karta arka arkaya tıklamayı görsel olarak da caydırır -->
+                    <Border Grid.Row="0" Grid.RowSpan="2"
+                            Background="#B30E1015"
+                            Visibility="{Binding IsLaunching, Converter={StaticResource BoolToVisibilityConverter}}" />
                 </Grid>
             </Border>
         </Button>

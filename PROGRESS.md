@@ -76,7 +76,57 @@ Kısa, tarihli günlük. Her önemli adımdan sonra güncellenir.
   arkaplanda kısaca çalıştırılıp çökme olmadığı doğrulandı. **Kullanıcı görsel/etkileşim olarak
   inceledi ve onayladı** (2026-07-26).
 
+## 2026-07-26/27 — Oyun başlatma (strateji deseni + test modu)
+
+- **Strateji deseni:** `Gamora.Core/Services/LaunchStrategyBase` (soyut) ortak akışı tek yerde
+  topluyor: komut oluşturma hatası, test modu ikamesi, `Process.Start` + hata yakalama.
+  5 somut sınıf (`ExeLaunchStrategy`, `SteamLaunchStrategy`, `RiotLaunchStrategy`,
+  `BattleNetLaunchStrategy`, `EpicLaunchStrategy`) sadece kendi komutunu üretiyor.
+  `GameLauncher`, DI'dan `IEnumerable<ILaunchStrategy>` alıp `LaunchType`'a göre dispatch ediyor.
+  **Not:** battlenet/epic URI kalıpları DEVELOPMENT.md'de net değildi ("kendi URI/komut
+  kalıpları") — bilinen gerçek şemalar kullanıldı (`battlenet://{kod}`,
+  `com.epicgames.launcher://apps/{id}?action=launch&silent=true`) ama gerçek cihazda
+  doğrulanmadı; steam/riot DEVELOPMENT.md'de net olduğu için eminiz.
+- **PathResolver + settings.json:** `{GAMEDISK}` → `settings.GameDisk`. `SettingsService`
+  dosya yoksa varsayılanlarla oluşturuyor.
+- **Test modu:** `testMode=true` iken gerçek komut yerine `notepad.exe` açılır, gerçek komut
+  Serilog'a `[TEST] {komut} çalıştırılacaktı` olarak yazılır — kafeye gitmeden doğrulanabilir.
+- **Overlay + kilit:** Tam ekran yarı saydam "BAŞLATILIYOR" katmanı (pulse animasyonu + oyun
+  adı); hatada aynı katman Türkçe mesaj + "Tamam" butonuna dönüşüp 4sn sonra kendiliğinden
+  kapanır. `GameViewModel.SelectCommand` async olduğu için CommunityToolkit.Mvvm'in
+  `[RelayCommand]`'i otomatik yeniden-giriş engeli sağlıyor; `Task.WhenAll(başlatma,
+  Task.Delay(3.5sn))` ile bu süre en az 3.5 saniyeye sabitlendi, kartta da görsel karartma var.
+- **Süreç izleme:** Başarılı başlatmadan sonra pencere küçülür; `LaunchResult.Process` doluysa
+  (çoğunlukla exe tipinde) `WaitForExitAsync()` ile kapanması beklenip pencere geri getirilir.
+  URI tabanlı başlatmalarda (steam/riot/battlenet/epic) process genelde izlenemez — Core sadece
+  `Process: null` döner, müşteri kendisi geri döner (bilinçli Faz 1 sınırı).
+- **Doğrulama:** `dotnet build`/`test` temiz (17/17). Ortamın kendi otomatik input-injection'ı
+  arkaplan testinde birkaç kartı tıklayıp exe/steam tiplerini uçtan uca doğruladı (loglar tam
+  beklenen formatta). Riot/battlenet/epic'i ve overlay'in görselini **kullanıcı bizzat
+  tıklayarak doğrulamadı** — sıradaki oturumda kontrol edilmeli.
+
+## 2026-07-27 — Veri yolu: sabit C:\GamoraData yerine settings.json → dataRoot
+
+- **Sorun:** `MainViewModel`'de `CatalogPath`/`CoversDirectory` sabit `C:\GamoraData` idi —
+  CLAUDE.md'nin "mutlak yol hardcode etme" kuralına aykırıydı.
+- **Tarama sonucu:** Kod genelinde sabit veri yolu geçen TEK yer `MainViewModel.cs`'teki bu iki
+  `const` idi. `CatalogService`/`GameViewModel` zaten path'i parametre olarak alıyor, kendileri
+  hardcode etmiyor. `StatsService` projede henüz YOK (sadece `StatEvent` modeli var) — o yüzden
+  taranacak bir yeri yoktu, ama `LauncherSettings.StatsPath` şimdiden hazır, ileride
+  `StatsService` yazılınca sıfırdan doğru kaynağı kullanacak.
+- **Çözüm:** `LauncherSettings`'e `DataRoot` eklendi (varsayılan `C:\GamoraData`, `GameDisk`'ten
+  bağımsız — kafede ikisi aynı diskte olabilir ama ayrı ayarlanabilir kalıyor). `CatalogPath`,
+  `CoversPath`, `StatsPath` bu kökten türeyen `[JsonIgnore]` hesaplanan property'ler — settings.
+  json'a asla yazılmıyorlar, sadece `DataRoot` yazılıyor. `MainViewModel` artık `ISettingsService`
+  inject ediyor, `InitializeAsync`'te önce ayarları yükleyip `settings.CatalogPath`/`CoversPath`
+  kullanıyor.
+- **Doğrulama:** `dotnet build`/`test` temiz (17/17, yeni DataRoot testleri dahil). Gerçek
+  uygulamada `settings.json`'daki `dataRoot`'u geçici olarak `C:\GamoraData_Alt`'a çevirip orada
+  1 oyunluk farklı bir catalog.json'dan yüklendiğini log'da doğruladım
+  (`Katalog yüklendi: 1 oyun (...GamoraData_Alt\catalog.json)`), sonra `C:\GamoraData`'ya geri
+  alıp 200 oyunun yine oradan geldiğini teyit ettim; geçici klasör silindi.
+
 ### Sıradaki adımlar (henüz yapılmadı)
-- `PathResolver` (`{GAMEDISK}` çözümü), `IGameLauncher` (exe/steam/riot/battlenet/epic başlatma).
-- `IStatsService` (stats/{MachineName}.jsonl).
+- `IStatsService` (stats/{MachineName}.jsonl) — `LauncherSettings.StatsPath` zaten hazır.
 - Admin modu (`--admin`), oyun CRUD, kapak yükleme.
+- Riot/battlenet/epic başlatmayı ve oyun başlatma overlay'ini kullanıcı gözüyle doğrulama.

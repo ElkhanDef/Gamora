@@ -28,6 +28,14 @@ public partial class App : Application
 
         var services = new ServiceCollection();
         services.AddSingleton<ICatalogService, CatalogService>();
+        services.AddSingleton<IPathResolver, PathResolver>();
+        services.AddSingleton<ISettingsService, SettingsService>();
+        services.AddSingleton<ILaunchStrategy, ExeLaunchStrategy>();
+        services.AddSingleton<ILaunchStrategy, SteamLaunchStrategy>();
+        services.AddSingleton<ILaunchStrategy, RiotLaunchStrategy>();
+        services.AddSingleton<ILaunchStrategy, BattleNetLaunchStrategy>();
+        services.AddSingleton<ILaunchStrategy, EpicLaunchStrategy>();
+        services.AddSingleton<IGameLauncher, GameLauncher>();
         services.AddSingleton<MainViewModel>();
         services.AddSingleton<MainWindow>();
         _serviceProvider = services.BuildServiceProvider();
