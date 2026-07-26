@@ -4,6 +4,23 @@
 Hedef: ÜÇGEN Oyun Arşivi'nin özelliklerini modern bir arayüzle karşılamak,
 sonrasında merkezi yönetimle onu geçmek.
 
+## Uçtan Uca Akış
+
+Müşteri tarafı:
+1. Müşteri makinesi açılır → Gamora otomatik, tam ekran başlar.
+2. Ortak diskten catalog.json okunur → oyunlar kapaklarla grid'de listelenir.
+3. Müşteri arar/filtreler, oyuna tıklar → launchType'a göre başlatılır
+   (exe / steam / riot / battlenet / epic).
+4. Müşteri kendi hesabıyla platforma giriş yapar, oynar. Başlatma olayı
+   stats/{MachineName}.jsonl dosyasına yazılır.
+5. Oyun kapanınca grid'e dönülür. Makine kapanınca hesap/iz temizliği
+   disksiz sistemin işidir — bizim kapsamımız dışında.
+
+Admin tarafı:
+1. Kafe sahibi sunucuda `Gamora.exe --admin` açar (şifreli).
+2. Oyun ekler/düzenler/gizler, kapak yükler → catalog.json'a atomik yazılır.
+3. Tüm müşteri makineleri değişikliği anında görür; imaja dokunulmaz.
+
 ## Ortam Bilgisi
 
 - Kafeler disksiz (diskless) sistem kullanıyor (CCBoot). Müşteri makineleri
