@@ -2,8 +2,34 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:Gamora.App"
-             StartupUri="MainWindow.xaml">
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+             xmlns:converters="clr-namespace:Gamora.App.Converters">
     <Application.Resources>
-         
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ui:ThemesDictionary Theme="Dark" />
+                <ui:ControlsDictionary />
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- Gamora marka paleti: tek vurgu rengi (elektrik moru), ikinci vurgu rengi yok. -->
+            <Color x:Key="AppBackgroundColor">#0E1015</Color>
+            <SolidColorBrush x:Key="AppBackgroundBrush" Color="{StaticResource AppBackgroundColor}" />
+
+            <Color x:Key="CardBackgroundColor">#161A22</Color>
+            <SolidColorBrush x:Key="CardBackgroundBrush" Color="{StaticResource CardBackgroundColor}" />
+
+            <Color x:Key="HeroBackgroundColor">#12151C</Color>
+            <SolidColorBrush x:Key="HeroBackgroundBrush" Color="{StaticResource HeroBackgroundColor}" />
+
+            <Color x:Key="PlaceholderTextColor">#3A3F4E</Color>
+            <SolidColorBrush x:Key="PlaceholderTextBrush" Color="{StaticResource PlaceholderTextColor}" />
+
+            <Color x:Key="AccentColor">#7C5CFF</Color>
+            <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}" />
+
+            <FontFamily x:Key="RajdhaniFont">pack://application:,,,/Gamora.App;component/Assets/Fonts/#Rajdhani</FontFamily>
+
+            <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

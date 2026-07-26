@@ -1,12 +1,167 @@
-﻿<Window x:Class="Gamora.App.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Gamora.App"
-        mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+<ui:FluentWindow x:Class="Gamora.App.MainWindow"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                 xmlns:vwp="clr-namespace:WpfToolkit.Controls;assembly=VirtualizingWrapPanel"
+                 xmlns:views="clr-namespace:Gamora.App.Views"
+                 mc:Ignorable="d"
+                 Title="Gamora"
+                 WindowState="Maximized"
+                 ExtendsContentIntoTitleBar="True"
+                 Background="{StaticResource AppBackgroundBrush}">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
+        <!-- Üst bar: logo + saat/pencere düğmeleri, altında vurgu renginde ince ayırıcı -->
+        <Grid Grid.Row="0">
+            <ui:TitleBar Title=""
+                         ShowMaximize="False"
+                         CanMaximize="False">
+                <ui:TitleBar.Header>
+                    <StackPanel Orientation="Horizontal" Margin="16,0,0,0" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="G" FontFamily="{StaticResource RajdhaniFont}" FontSize="20" Foreground="White" />
+                            <TextBlock Text="A" FontFamily="{StaticResource RajdhaniFont}" FontSize="20" Foreground="White" Margin="2,0,0,0" />
+                            <TextBlock Text="M" FontFamily="{StaticResource RajdhaniFont}" FontSize="20" Foreground="White" Margin="2,0,0,0" />
+                            <TextBlock Text="O" FontFamily="{StaticResource RajdhaniFont}" FontSize="20" Foreground="White" Margin="2,0,0,0" />
+                            <TextBlock Text="R" FontFamily="{StaticResource RajdhaniFont}" FontSize="20" Foreground="White" Margin="2,0,0,0" />
+                            <TextBlock Text="A" FontFamily="{StaticResource RajdhaniFont}" FontSize="20" Foreground="{StaticResource AccentBrush}" Margin="2,0,0,0" />
+                        </StackPanel>
+                        <Rectangle Width="3" Height="18" Fill="{StaticResource AccentBrush}" Margin="8,0,0,0" VerticalAlignment="Center">
+                            <Rectangle.RenderTransform>
+                                <SkewTransform AngleX="-18" />
+                            </Rectangle.RenderTransform>
+                        </Rectangle>
+                    </StackPanel>
+                </ui:TitleBar.Header>
+                <ui:TitleBar.TrailingContent>
+                    <TextBlock Text="{Binding ClockText}"
+                               FontSize="14"
+                               Margin="0,0,12,0"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                </ui:TitleBar.TrailingContent>
+            </ui:TitleBar>
+
+            <Border Height="1" VerticalAlignment="Bottom">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="Transparent" Offset="0" />
+                        <GradientStop Color="{StaticResource AccentColor}" Offset="0.5" />
+                        <GradientStop Color="Transparent" Offset="1" />
+                    </LinearGradientBrush>
+                </Border.Background>
+            </Border>
+        </Grid>
+
+        <!-- Vitrin: en popüler (şimdilik ilk) oyun -->
+        <Border Grid.Row="1"
+                Height="170"
+                Margin="24,12,24,8"
+                Background="{StaticResource HeroBackgroundBrush}"
+                Visibility="{Binding FeaturedGame, Converter={StaticResource NullToVisibilityConverter}}">
+            <Grid ClipToBounds="True">
+                <!-- Kapak yoksa: sağda çok soluk, dekoratif dev baş harf (watermark) -->
+                <TextBlock Text="{Binding FeaturedGame.Initials}"
+                           FontFamily="{StaticResource RajdhaniFont}"
+                           FontSize="150"
+                           Foreground="{StaticResource AccentBrush}"
+                           Opacity="0.07"
+                           HorizontalAlignment="Right"
+                           VerticalAlignment="Center"
+                           Margin="0,0,16,0"
+                           Visibility="{Binding FeaturedGame.CoverImage, Converter={StaticResource NullToVisibilityConverter}, ConverterParameter=Invert}" />
+
+                <!-- Kapak varsa: sağda dursun -->
+                <Image Source="{Binding FeaturedGame.CoverImage}"
+                       Stretch="UniformToFill"
+                       HorizontalAlignment="Right"
+                       Width="480"
+                       Visibility="{Binding FeaturedGame.CoverImage, Converter={StaticResource NullToVisibilityConverter}}" />
+
+                <!-- Soldan koyu -> sağa şeffaf geçiş, metnin okunabilirliği için -->
+                <Border>
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                            <GradientStop Color="#F012151C" Offset="0" />
+                            <GradientStop Color="#0012151C" Offset="0.6" />
+                        </LinearGradientBrush>
+                    </Border.Background>
+                </Border>
+
+                <StackPanel VerticalAlignment="Center" Margin="36,0,0,0">
+                    <TextBlock Text="ÖNE ÇIKAN"
+                               FontSize="12"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource AccentBrush}" />
+                    <TextBlock Text="{Binding FeaturedGame.Name}"
+                               FontFamily="{StaticResource RajdhaniFont}"
+                               FontSize="42"
+                               Foreground="White"
+                               Margin="0,4,0,14" />
+                    <Button Content="OYNA"
+                            Command="{Binding FeaturedGame.SelectCommand}"
+                            Padding="28,12"
+                            FontWeight="Bold"
+                            FontSize="14"
+                            Cursor="Hand"
+                            HorizontalAlignment="Left"
+                            Foreground="White"
+                            BorderThickness="0">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{StaticResource AccentBrush}">
+                                    <ContentPresenter HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"
+                                                      Margin="{TemplateBinding Padding}" />
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <ListView Grid.Row="2"
+                  ItemsSource="{Binding Games}"
+                  Background="Transparent"
+                  BorderThickness="0"
+                  Padding="10,0,10,12"
+                  AlternationCount="999999"
+                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                  VirtualizingPanel.IsVirtualizing="True"
+                  VirtualizingPanel.VirtualizationMode="Recycling"
+                  VirtualizingPanel.ScrollUnit="Pixel">
+            <ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <vwp:VirtualizingWrapPanel Orientation="Horizontal" SpacingMode="None" />
+                </ItemsPanelTemplate>
+            </ListView.ItemsPanel>
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="Padding" Value="0" />
+                    <Setter Property="Margin" Value="0" />
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ListViewItem">
+                                <ContentPresenter />
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <views:GameCardView />
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
     </Grid>
-</Window>
+</ui:FluentWindow>
