@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
              mc:Ignorable="d"
              Width="170" Margin="14">
 
@@ -111,6 +112,21 @@
                                        Foreground="{StaticResource PlaceholderTextBrush}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center" />
+                        </Border>
+
+                        <!-- Popüler rozeti: en çok başlatılan ilk 10 oyunda görünür -->
+                        <Border Width="20" Height="20"
+                                CornerRadius="10"
+                                Background="#B30E1015"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top"
+                                Margin="0,6,6,0"
+                                Visibility="{Binding IsPopular, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <ui:SymbolIcon Symbol="Fire16"
+                                           FontSize="14"
+                                           Foreground="{StaticResource AccentBrush}"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center" />
                         </Border>
                     </Grid>
 

@@ -126,7 +126,35 @@ Kısa, tarihli günlük. Her önemli adımdan sonra güncellenir.
   (`Katalog yüklendi: 1 oyun (...GamoraData_Alt\catalog.json)`), sonra `C:\GamoraData`'ya geri
   alıp 200 oyunun yine oradan geldiğini teyit ettim; geçici klasör silindi.
 
+## 2026-07-27 — İstatistik: launch kaydı + popülerlik sıralaması
+
+- **StatsService:** Her başarılı oyun başlatmada `{dataRoot}\stats\{MachineName}.jsonl`'e bir
+  satır ekler: `{"gameId":"cs2","event":"launch","time":"2026-07-26T19:45:00"}`. Makine kimliği
+  kaydın içinde yok, zaten dosya adında. `GameLauncher.LaunchAsync` bu çağrıyı **beklemeden**
+  (`_ = ...`) yapıyor — başlatma akışı bir milisaniye bile gecikmiyor. `StatsService` kendi
+  içinde tüm hataları yakalar, asla fırlatmaz (istatistik kritik değil, oyun başlatma kritik).
+- **PopularityService:** `stats/` altındaki tüm `.jsonl` dosyalarını okuyup oyun başına toplam
+  sayıyı hesaplıyor; bozuk/yarım satırları (başka makine tam o anda yazıyor olabilir) sessizce
+  atlıyor. Açılışta bir kez çalışıp bellekte tutuluyor, canlı güncelleme yok.
+- **Sıralama + hero:** `MainViewModel.InitializeAsync` artık `Games`'i popülerlik (azalan) →
+  sortOrder → ad sırasına göre dolduruyor. `FeaturedGame` zaten `Games.FirstOrDefault()`
+  olduğu için hiçbir ek değişiklik gerekmeden otomatik olarak en popüler oyunu gösteriyor.
+- **Popüler rozeti:** İlk 10 (launch sayısı > 0 olan) karta sağ üst köşede, yarı saydam koyu
+  20px yuvarlak zemin üstünde `ui:SymbolIcon Symbol="Fire16"` (14px, vurgu moru, sayı yok).
+  İlk halde elle çizilmiş bir `Path` kullanmıştım (alev değil su damlasına benziyordu) —
+  `SymbolRegular.cs` kaynağını indirip `Fire16/20/24`'ün gerçekten var olduğunu satır satır
+  doğruladıktan sonra WPF-UI'ın kendi ikonuna geçtim. **Kullanıcı görsel olarak inceledi ve
+  onayladı** (2026-07-27).
+- **Test aracı:** `tools/reset-testdata.ps1` — `stats/`'i temizleyip PC-01..04 için dağıtılmış
+  sahte olaylar üretiyor (test-game-50=6, test-game-10=4, test-game-77=3, + 9 tekli, + 1 kasıtlı
+  bozuk satır), catalog.json'a dokunmuyor. İstatistiği sıfırdan test etmek için tekrar çalıştır.
+- **Doğrulama:** `dotnet build`/`test` temiz (24/24, 8 yeni test). Gerçek uygulamada script'i
+  çalıştırıp katalogu açtım, log tam beklendiği gibi:
+  `Popülerlik hesaplandı: 12 oyun, 4 dosya` / `En popüler oyunlar: test-game-50=6, test-game-10=4,
+  test-game-77=3` — bozuk satır sessizce atlandı (12 oyun sayıldı, 13. hiç görünmedi), hero
+  gerçekten test-game-50'ye döndü.
+
 ### Sıradaki adımlar (henüz yapılmadı)
-- `IStatsService` (stats/{MachineName}.jsonl) — `LauncherSettings.StatsPath` zaten hazır.
 - Admin modu (`--admin`), oyun CRUD, kapak yükleme.
-- Riot/battlenet/epic başlatmayı ve oyun başlatma overlay'ini kullanıcı gözüyle doğrulama.
+- Riot/battlenet/epic başlatmayı, oyun başlatma overlay'ini ve popüler rozetini kullanıcı
+  gözüyle doğrulama.

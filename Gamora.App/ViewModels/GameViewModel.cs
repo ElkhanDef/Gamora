@@ -25,16 +25,24 @@ public partial class GameViewModel : ObservableObject
     [ObservableProperty]
     private bool _isLaunching;
 
-    public GameViewModel(Game game, string coversDirectory, Func<GameViewModel, Task> requestLaunch)
+    [ObservableProperty]
+    private bool _isPopular;
+
+    public GameViewModel(Game game, string coversDirectory, Func<GameViewModel, Task> requestLaunch, int launchCount)
     {
         _game = game;
         _requestLaunch = requestLaunch;
+        LaunchCount = launchCount;
         _coverFullPath = string.IsNullOrWhiteSpace(game.Cover)
             ? ""
             : Path.Combine(coversDirectory, Path.GetFileName(game.Cover));
     }
 
     public Game Model => _game;
+
+    // Açılışta bir kez hesaplanan toplam başlatma sayısı (bkz. IPopularityService); canlı
+    // güncellenmez, sıralama ve "popüler" rozeti için kullanılır.
+    public int LaunchCount { get; }
 
     public string Name => _game.Name;
 

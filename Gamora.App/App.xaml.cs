@@ -35,6 +35,8 @@ public partial class App : Application
         services.AddSingleton<ILaunchStrategy, RiotLaunchStrategy>();
         services.AddSingleton<ILaunchStrategy, BattleNetLaunchStrategy>();
         services.AddSingleton<ILaunchStrategy, EpicLaunchStrategy>();
+        services.AddSingleton<IStatsService, StatsService>();
+        services.AddSingleton<IPopularityService, PopularityService>();
         services.AddSingleton<IGameLauncher, GameLauncher>();
         services.AddSingleton<MainViewModel>();
         services.AddSingleton<MainWindow>();

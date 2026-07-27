@@ -15,10 +15,13 @@ public partial class MainViewModel : ObservableObject
 {
     public const string AllCategoriesLabel = "Tümü";
 
+    private const int PopularBadgeCount = 10;
+
     private static readonly TimeSpan OverlayErrorAutoDismiss = TimeSpan.FromSeconds(4);
 
     private readonly ICatalogService _catalogService;
     private readonly ISettingsService _settingsService;
+    private readonly IPopularityService _popularityService;
     private readonly IGameLauncher _gameLauncher;
     private readonly DispatcherTimer _clockTimer;
     private readonly DispatcherTimer _searchDebounceTimer;
@@ -63,13 +66,14 @@ public partial class MainViewModel : ObservableObject
     // Count/indexer okuduğu için virtualization sorunsuz çalışır.
     public ICollectionView GamesView { get; private set; }
 
-    // Şimdilik katalogdaki ilk oyun; popülerlik/istatistik servisi gelince ona bağlanacak.
+    // Games artık popülerliğe göre sıralı (bkz. InitializeAsync) — ilk eleman en popüler oyun.
     public GameViewModel? FeaturedGame => Games.FirstOrDefault();
 
-    public MainViewModel(ICatalogService catalogService, ISettingsService settingsService, IGameLauncher gameLauncher)
+    public MainViewModel(ICatalogService catalogService, ISettingsService settingsService, IPopularityService popularityService, IGameLauncher gameLauncher)
     {
         _catalogService = catalogService;
         _settingsService = settingsService;
+        _popularityService = popularityService;
         _gameLauncher = gameLauncher;
 
         GamesView = CollectionViewSource.GetDefaultView(Games);
@@ -92,17 +96,33 @@ public partial class MainViewModel : ObservableObject
         try
         {
             var settings = await _settingsService.LoadAsync();
+            await _popularityService.LoadAsync(settings.StatsPath);
             var catalog = await _catalogService.LoadAsync(settings.CatalogPath);
 
+            // Varsayılan sıralama: popülerlik (çok açılan üstte), eşitse sortOrder, sonra ad.
             var visibleGames = catalog.Games
                 .Where(g => g.Visible)
-                .OrderBy(g => g.SortOrder)
-                .Select(g => new GameViewModel(g, settings.CoversPath, LaunchGameAsync));
+                .Select(g => new GameViewModel(g, settings.CoversPath, LaunchGameAsync, _popularityService.GetLaunchCount(g.Id)))
+                .OrderByDescending(vm => vm.LaunchCount)
+                .ThenBy(vm => vm.Model.SortOrder)
+                .ThenBy(vm => vm.Name, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            foreach (var vm in visibleGames.Where(vm => vm.LaunchCount > 0).Take(PopularBadgeCount))
+            {
+                vm.IsPopular = true;
+            }
 
             Games = new ObservableCollection<GameViewModel>(visibleGames);
             Categories = new ObservableCollection<string>([AllCategoriesLabel, .. catalog.Categories]);
 
             Log.Information("Katalog yüklendi: {Count} oyun ({CatalogPath})", Games.Count, settings.CatalogPath);
+
+            if (visibleGames.Count > 0)
+            {
+                var top = visibleGames.Take(3).Select(vm => $"{vm.Model.Id}={vm.LaunchCount}");
+                Log.Information("En popüler oyunlar: {Top}", string.Join(", ", top));
+            }
         }
         catch (Exception ex)
         {
