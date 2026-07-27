@@ -54,14 +54,19 @@ merkezi sunucuda kullanılacak.
 ```
 Gamora.sln
 ├── Gamora.Core   (classlib, net10.0)
-│   ├── Models/        Game, Catalog, GameCategory, LaunchType, StatEvent
-│   ├── Services/      CatalogService (oku/atomik yaz), GameLauncher,
-│   │                  StatsService, PathResolver ({GAMEDISK} çözümü)
-│   └── Abstractions/  ICatalogService, IGameLauncher, IStatsService
+│   ├── Models/        Game, Catalog, LaunchType, StatEvent, LauncherSettings,
+│   │                  AdminLock, LaunchCommand, LaunchResult, PasswordSetupResult
+│   ├── Services/      CatalogService (oku/atomik yaz), GameLauncher + strateji
+│   │                  sınıfları, PathResolver, SettingsService, StatsService,
+│   │                  PopularityService, PasswordService (PBKDF2)
+│   └── Abstractions/  ICatalogService, IGameLauncher, IStatsService,
+│                      IPopularityService, ISettingsService, IPasswordService
 └── Gamora.App    (WPF, net10.0-windows)
-    ├── Views/         Müşteri: MainWindow, GameGridView, SearchBar
-    │                  Admin: AdminWindow, GameEditView, StatsView
-    ├── ViewModels/
+    ├── Views/         Müşteri: MainWindow, GameCardView
+    │                  Admin/: PasswordSetupWindow, PasswordLoginWindow,
+    │                  AdminMainWindow
+    ├── ViewModels/    Admin/: PasswordSetupViewModel, PasswordLoginViewModel,
+    │                  AdminMainViewModel
     ├── Converters/
     └── Assets/
 ```
@@ -75,6 +80,7 @@ Tek uygulama, iki mod:
 ```
 G:\Gamora\
 ├── catalog.json      Oyun kataloğu — tek gerçek kaynak. Tek yazar: admin.
+├── sfr.lock          Admin şifre hash'i (kasıtlı nötr ad — bkz. aşağı).
 ├── covers\           Kapak görselleri (600x900 dikey, jpg/png)
 ├── videos\           (Faz 1.5) Tanıtım videoları
 └── stats\            Makine başına ayrı olay dosyası (çakışma önlenir)
@@ -90,6 +96,10 @@ Kurallar:
 - Yollar catalog'da `{GAMEDISK}` değişkeniyle tutulur; makinedeki gerçek
   harf, exe yanındaki `settings.json`'dan okunur.
 - SQLite kullanılmıyor: ağ paylaşımı üzerinde dosya kilitleme güvenilmez.
+- Admin şifre hash'i `dataRoot`'taki `sfr.lock` dosyasındadır (kasıtlı nötr ad).
+  settings.json'da şifreyle ilgili hiçbir alan yok — hash paylaşımlı diskte durur,
+  dosya sistemi izinleri onu müşteri makinelerinden korur. PBKDF2 (salt + iterasyon
+  sayısı + hash birlikte saklanır), düz metin/SHA256/MD5 yok.
 
 ## catalog.json Şeması (özet)
 

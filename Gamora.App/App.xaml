@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:Gamora.App"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-             xmlns:converters="clr-namespace:Gamora.App.Converters">
+             xmlns:converters="clr-namespace:Gamora.App.Converters"
+             ShutdownMode="OnExplicitShutdown">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -26,6 +27,9 @@
 
             <Color x:Key="AccentColor">#7C5CFF</Color>
             <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}" />
+
+            <Color x:Key="ErrorColor">#FF6B6B</Color>
+            <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource ErrorColor}" />
 
             <FontFamily x:Key="RajdhaniFont">pack://application:,,,/Gamora.App;component/Assets/Fonts/#Rajdhani</FontFamily>
 

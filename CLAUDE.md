@@ -13,6 +13,12 @@ Mimari ve bağlam için önce DEVELOPMENT.md dosyasını oku.
 - Küçük adımlarla ilerle: her seferde tek özellik, çalışır durumda bırak.
   Büyük refactor'ları önce öner, onayımı almadan yapma.
 - Var olmayan NuGet paketi veya API uydurma; emin değilsen söyle.
+- docs/KURULUM.md kafe teknisyeni için kurulum kılavuzudur (hedef kitle
+  developer DEĞİL, disksiz kafe sistemi bilen teknisyen). İlgili bir
+  özellik değiştiğinde (ayar alanı, dosya adı, admin ekranı) bu belgedeki
+  karşılığını da güncelle; [PİLOT ÖNCESİ NETLEŞECEK] işaretlerini ancak
+  ilgili özellik gerçekten bitince doldur. Belgenin tonunu ve yapısını
+  koru.
 
 ## Mimari Kurallar
 

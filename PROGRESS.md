@@ -155,6 +155,59 @@ Kısa, tarihli günlük. Her önemli adımdan sonra güncellenir.
   gerçekten test-game-50'ye döndü.
 
 ### Sıradaki adımlar (henüz yapılmadı)
-- Admin modu (`--admin`), oyun CRUD, kapak yükleme.
+- Riot/battlenet/epic başlatmayı ve oyun başlatma overlay'ini kullanıcı gözüyle doğrulama.
+
+## 2026-07-27 — Admin modu iskeleti: şifre kurulum/giriş + ana pencere
+
+- **PasswordService (Core, PBKDF2):** `Rfc2898DeriveBytes.Pbkdf2` (modern statik API — eski
+  constructor artık obsolete, `SYSLIB0060` uyarısı verdi, o yüzden statik metoda geçtim),
+  16 byte rastgele salt, 100.000 iterasyon, SHA256. `AdminLock` dosya formatı salt+iterasyon+
+  hash'i birlikte tutuyor ki iterasyon sayısı ileride artırılınca eski kayıtlar hâlâ okunabilsin.
+  Karşılaştırma `CryptographicOperations.FixedTimeEquals` ile zamanlama saldırılarına karşı
+  sabit sürede. Tüm kripto Core'da — UI'da hiç kripto kodu yok.
+- **sfr.lock:** `dataRoot`'ta duruyor, adı `LauncherSettings.AdminLockFileName` sabitinde tek
+  yerde tanımlı (`AdminLockPath` diğer üç yol gibi `[JsonIgnore]` türetilen property).
+  settings.json'da şifreyle ilgili hiçbir alan yok. Yazma atomik (`.tmp` + `File.Replace`/`Move`,
+  catalog.json'daki desenin aynısı). Reset saldırısına karşı: `sfr.lock` zaten varsa
+  `SetPasswordAsync` üzerine yazmayı reddediyor.
+- **İlk kurulum akışı:** `--admin` + sfr.lock yoksa `PasswordSetupWindow` (şifre + tekrar, min
+  6 karakter). Yazma gerçekten başarısız olursa (salt-okur paylaşım) "Yönetici kurulumu
+  yalnızca sunucuda yapılabilir." mesajı gösterilip form kilitleniyor (`IsTerminalError`) —
+  akış orada bitiyor, tekrar deneme yok.
+- **Giriş akışı:** sfr.lock varsa `PasswordLoginWindow` — tek şifre alanı (`ui:PasswordBox`,
+  gerçek bir `DependencyProperty` olduğu için klasik `PasswordBox` gibi code-behind köprüsü
+  gerekmedi), "Giriş" butonu `IsDefault="True"` (Enter otomatik çalışır). 3 yanlış denemede
+  `DispatcherTimer` ile 30 saniyelik geri sayım, süre dolunca sayaç sıfırlanıp tekrar denemeye
+  izin veriyor.
+- **Admin ana penceresi (iskelet):** `AdminMainWindow` — sol dikey menü (Oyunlar/İstatistikler/
+  Ayarlar, seçili öğede vurgu-moru sol şerit), içerik alanı şimdilik sadece başlık gösteriyor.
+  Boyutlandırılabilir, aynı koyu tema/tipografi.
+- **Mod ayrımı:** `App.xaml.cs` `e.Args`'ta `--admin` arıyor; yoksa akış eskisiyle birebir aynı
+  (hiç dokunulmadı). Admin akışı `ShowDialog()` ile senkron bekliyor — kurulum/giriş penceresi
+  `DialogResult=true` ile kapanmadan `AdminMainWindow` açılmıyor.
+- **Doğrulama:** `dotnet build`/`test` temiz (34/34, 12 yeni `PasswordService` testi — doğru
+  şifre geçiyor, yanlış geçmiyor, her kurulumda salt farklı, en az 100.000 iterasyon, düz metin
+  dosyada yok, var olan kilit üzerine yazılmıyor, yazılamayan yol dostane hata döndürüyor).
+  Gerçek uygulamada: (a) parametresiz açılış — loglar birebir eskisiyle aynı, admin'e hiç
+  değinmiyor; (b) `--admin` + sfr.lock yok → log "kurulum ekranı açılıyor"; (c) sfr.lock'u
+  GUI'ye dokunmadan `PasswordService.SetPasswordAsync`'i doğrudan çalıştırarak (şifre
+  `test123456`) oluşturup ikinci `--admin`'de log "giriş ekranı açılıyor"nu doğruladım; (e)
+  `icacls ... /deny` ile gerçekten yazılamayan bir klasöre `dataRoot`'u çevirip aynı üretim
+  kod yolunu (`SetPasswordAsync`) çalıştırdım — çıktı tam beklenen: `Success: False`,
+  `"Yönetici kurulumu yalnızca sunucuda yapılabilir."`; sonra ACL/klasör/settings.json geri
+  alındı. **(d) yanlış şifre + 30sn kilitlenmeyi ve tüm ekranların görselini bizzat
+  tıklayarak doğrulamadım** — gerçek `sfr.lock` hâlâ duruyor (şifre: `test123456`), bunu
+  kullanıcının kendi gözüyle kontrol etmesi lazım.
+- **KURULUM.md senkronu:** Dosya repo kökünde duruyormuş (docs/ altında değil). CLAUDE.md'nin
+  "ilgili özellik değiştiğinde güncelle" kuralına göre iki uyuşmazlığı düzelttim: (1) "en az 10
+  karakter" iddiası gerçek kuralla (6) çelişiyordu — 6'yı kabul edip 10+'ı öneri olarak
+  belirtecek şekilde yeniden yazdım; (2) Bölüm 3 (oyun ekleme) sanki bitmiş gibi anlatılmış,
+  oysa şu an sadece admin iskeleti (üç boş bölüm başlığı) var — başına "henüz yapım aşamasında"
+  notu ekledim. Belgenin tonu/yapısı korunuyor, [PİLOT ÖNCESİ NETLEŞECEK] işaretlerine dokunmadım.
+
+### Sıradaki adımlar (henüz yapılmadı)
+- Admin modu içerikleri: oyun CRUD, kapak yükleme, istatistik ekranı, ayarlar ekranı
+  (tamamlandıkça KURULUM.md Bölüm 3'ü güncellenmeli).
 - Riot/battlenet/epic başlatmayı, oyun başlatma overlay'ini ve popüler rozetini kullanıcı
   gözüyle doğrulama.
+- Giriş ekranındaki 3-deneme/30sn kilitlenmeyi ve tüm şifre ekranlarının görselini doğrulama.

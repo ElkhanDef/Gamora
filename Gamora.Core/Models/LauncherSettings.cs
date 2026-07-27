@@ -4,6 +4,11 @@ namespace Gamora.Core.Models;
 
 public sealed class LauncherSettings
 {
+    // Admin şifre hash'inin tutulduğu dosyanın adı — kasıtlı nötr, dışarıdan içeriği belli
+    // olmasın. settings.json'da şifreyle ilgili hiçbir alan YOK; hash sadece bu dosyada,
+    // paylaşımlı diskte (dataRoot) durur, dosya sistemi izinleri onu müşteriden korur.
+    public const string AdminLockFileName = "sfr.lock";
+
     // Oyunların kurulu olduğu disk — {GAMEDISK} bu değere çözülür (bkz. IPathResolver).
     // DataRoot'tan bağımsız bir ayardır: kafede ikisi genelde aynı fiziksel diskte olur
     // (ör. G:\) ama farklı köklerde durabilirler (G:\ vs G:\Gamora) ve ayrı kalmalı.
@@ -25,4 +30,7 @@ public sealed class LauncherSettings
 
     [JsonIgnore]
     public string StatsPath => Path.Combine(DataRoot, "stats");
+
+    [JsonIgnore]
+    public string AdminLockPath => Path.Combine(DataRoot, AdminLockFileName);
 }
