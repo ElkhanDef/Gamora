@@ -1,6 +1,7 @@
 using System.IO;
 using System.Linq;
 using System.Windows;
+using System.Windows.Media;
 using System.Windows.Threading;
 using Gamora.App.ViewModels;
 using Gamora.App.ViewModels.Admin;
@@ -9,6 +10,7 @@ using Gamora.Core.Abstractions;
 using Gamora.Core.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
+using Wpf.Ui.Appearance;
 
 namespace Gamora.App;
 
@@ -31,6 +33,16 @@ public partial class App : Application
             .CreateLogger();
 
         DispatcherUnhandledException += OnDispatcherUnhandledException;
+
+        // WPF-UI'nin kendi native kontrolleri (ToggleSwitch, NumberBox vb.) varsayılan olarak
+        // Windows sistem vurgu rengini (genelde mavi) kullanır. Marka paletindeki tek vurgu
+        // rengiyle (mor, App.xaml'deki AccentColor) çakışmasın diye burada sabitliyoruz —
+        // sistem accent'ini değil, kendi rengimizi kullanır (systemAccentColor: false).
+        ApplicationAccentColorManager.Apply(
+            (Color)ColorConverter.ConvertFromString("#7C5CFF"),
+            ApplicationTheme.Dark,
+            systemGlassColor: false,
+            systemAccentColor: false);
 
         var services = new ServiceCollection();
         ConfigureServices(services);
@@ -72,6 +84,7 @@ public partial class App : Application
         services.AddTransient<PasswordSetupWindow>();
         services.AddTransient<PasswordLoginViewModel>();
         services.AddTransient<PasswordLoginWindow>();
+        services.AddSingleton<GameListViewModel>();
         services.AddSingleton<AdminMainViewModel>();
         services.AddSingleton<AdminMainWindow>();
     }

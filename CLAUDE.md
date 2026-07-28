@@ -5,6 +5,10 @@ Mimari ve bağlam için önce DEVELOPMENT.md dosyasını oku.
 
 ## Genel
 
+- PROGRESS.md ilerleme kaydıdır: her tamamlanan etapta ne bittiğini ve
+  varsa açık kalan işleri KISACA işle (etap başına birkaç satır, ayrıntı
+  commit mesajlarında). Uzun anlatı, kod parçası veya tekrar eden bilgi
+  yazma; dosyayı şişirme.
 - Benimle Türkçe konuş. Kod, tanımlayıcılar ve commit mesajları İngilizce;
   kullanıcıya görünen tüm arayüz metinleri Türkçe.
 - Ben Java/Spring geçmişinden geliyorum, C# ve WPF'te yeniyim.
