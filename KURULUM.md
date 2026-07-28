@@ -149,16 +149,16 @@ Gamora tam ekran açılmalı. (Oyun listesi henüz boş olacaktır, normal.)
 
 ## BÖLÜM 3 — Oyunları Ekleme (sunucuda, süpersiz)
 
-> NOT: Şifreyle giriş (Bölüm 1.3) şu an çalışıyor. Ama bu bölümdeki oyun
-> ekleme ekranı henüz yapım aşamasında — girişten sonra açılan pencere
-> şimdilik sadece üç bölüm başlığını (Oyunlar, İstatistikler, Ayarlar)
-> gösteriyor, içerikleri boş. Bu adımlar özellik tamamlanınca güncellenecek.
+> NOT: Kapak resmi yükleme henüz yapım aşamasında — "Kapak Seç" adımı bir
+> sonraki sürümde gelecek, o zamana kadar oyunlar kapaksız (baş harfli
+> kutu) görünür. Bunun dışındaki tüm adımlar (ekleme/düzenleme/silme,
+> arama, gizleme) çalışıyor.
 
-Sunucudaki "Gamora Yönetim" kısayolunu açın, şifrenizi girin.
-Her oyun için:
+Sunucudaki "Gamora Yönetim" kısayolunu açın, şifrenizi girin,
+sol menüden "Oyunlar"ı seçin. Her oyun için:
 
-1. "Oyun Ekle"ye tıklayın
-2. Oyunun adını ve kategorisini yazın (FPS, MOBA, Spor...)
+1. "+ Yeni Oyun"a tıklayın
+2. Oyunun adını yazın, kategorisini seçin ya da yeni bir kategori yazın
 3. Başlatma tipini seçin:
    - Steam oyunu  → tip: Steam,  istenen bilgi: oyunun Steam AppID'si
      (AppID'yi steamdb.info sitesinde oyunun adını aratarak bulursunuz;
@@ -167,17 +167,16 @@ Her oyun için:
    - Battle.net oyunu (CoD vb.) → tip: Battle.net
    - Epic oyunu → tip: Epic
    - Bunların dışında, doğrudan klasörden çalışan oyun → tip: EXE,
-     "Gözat" ile oyunun exe dosyasını G: diskinden seçin
-4. Kapak resmi ekleyin: "Kapak Seç" ile bilgisayarınızdan bir resim seçin.
-   Kapakları www.steamgriddb.com sitesinden indirmenizi öneririz
-   (oyun adını aratın, dikey/portre kapaklardan birini indirin).
-   Boyut mükemmel olmak zorunda değil — Gamora otomatik boyutlandırır.
-5. Kaydet.
+     "Gözat" ile oyunun exe dosyasını G: diskinden seçin (oyun diskinin
+     içinden seçtiğiniz sürece yol otomatik taşınabilir hale getirilir)
+   - Steam/Riot/Battle.net/Epic'te kodu bilmiyorsanız: "Kodu bilmiyorum"
+     kutusunu işaretleyin — tıklanınca oyunu değil, doğrudan o platformun
+     kendisini (Steam, Riot Client, Battle.net, Epic Games) açar; müşteri
+     oyunu oradan kendisi başlatır. EXE'de bu seçenek yoktur, yol zorunlu.
+4. Görünürlük ve sırayı ayarlayın, "Ekle"ye basın.
 
 Kaydettiğiniz anda TÜM müşteri makineleri yeni oyunu görür — makineleri
 yeniden başlatmaya, imaja girmeye gerek YOKTUR.
-
-[PİLOT ÖNCESİ NETLEŞECEK: yönetim ekranının kesin görünümü ve alan adları]
 
 ---
 

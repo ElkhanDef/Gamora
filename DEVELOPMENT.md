@@ -58,15 +58,16 @@ Gamora.sln
 │   │                  AdminLock, LaunchCommand, LaunchResult, PasswordSetupResult
 │   ├── Services/      CatalogService (oku/atomik yaz), GameLauncher + strateji
 │   │                  sınıfları, PathResolver, SettingsService, StatsService,
-│   │                  PopularityService, PasswordService (PBKDF2)
+│   │                  PopularityService, PasswordService (PBKDF2), GameIdGenerator
 │   └── Abstractions/  ICatalogService, IGameLauncher, IStatsService,
 │                      IPopularityService, ISettingsService, IPasswordService
 └── Gamora.App    (WPF, net10.0-windows)
     ├── Views/         Müşteri: MainWindow, GameCardView
     │                  Admin/: PasswordSetupWindow, PasswordLoginWindow,
-    │                  AdminMainWindow
+    │                  AdminMainWindow, GameListView, GameRowView, GameEditView
     ├── ViewModels/    Admin/: PasswordSetupViewModel, PasswordLoginViewModel,
-    │                  AdminMainViewModel
+    │                  AdminMainViewModel (liste↔form navigasyonu), GameListViewModel,
+    │                  GameRowViewModel, GameEditViewModel
     ├── Converters/
     └── Assets/
 ```
@@ -127,11 +128,19 @@ Kurallar:
 ```
 
 `launchType` değerleri: `exe | steam | riot | battlenet | epic`
-- exe: `launchTarget` = `{GAMEDISK}\Games\Oyun\oyun.exe`
+- exe: `launchTarget` zorunlu = `{GAMEDISK}\Games\Oyun\oyun.exe`
 - steam: `launchTarget` = Steam AppID → `steam://rungameid/{id}`
 - riot: `launchTarget` = ürün kodu (ör. `valorant`) →
   RiotClientServices `--launch-product=... --launch-patchline=live`
 - battlenet / epic: kendi URI/komut kalıpları
+
+steam/riot/battlenet/epic'te `launchTarget` OPSİYONEL: admin kodu
+bilmiyorsa boş bırakabilir (`GameEditView`'daki "kodu bilmiyorum" kutusu).
+Boşsa ilgili `LaunchStrategy` belirli bir oyunu değil platformun kendisini
+açar (`steam://open/main`, çıplak `battlenet://`/`com.epicgames.launcher://`,
+argümansız `RiotClientServices.exe`) — müşteri oyunu kütüphaneden kendisi
+başlatır. `LaunchCommand.IsPlatformFallback` bu durumu işaretler; test
+modunda "[TEST] platform fallback: {Platform} açılacaktı" loglanır.
 
 ## Fazlar
 

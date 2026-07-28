@@ -10,8 +10,15 @@ public sealed class RiotLaunchStrategy : LaunchStrategyBase
 
     public override LaunchType LaunchType => LaunchType.Riot;
 
-    protected override LaunchCommand BuildCommand(Game game, LauncherSettings settings)
+    internal override LaunchCommand BuildCommand(Game game, LauncherSettings settings)
     {
+        // Ürün kodu girilmemişse RiotClientServices.exe'yi argümansız açarız — bu, Riot Client'ın
+        // kendi ürün seçme ekranını (VALORANT/LoL/...) açar, müşteri oyunu oradan başlatır.
+        if (string.IsNullOrWhiteSpace(game.LaunchTarget))
+        {
+            return new LaunchCommand(RiotClientPath, IsPlatformFallback: true, FallbackPlatformLabel: "Riot Client");
+        }
+
         return new LaunchCommand(RiotClientPath, $"--launch-product={game.LaunchTarget} --launch-patchline=live");
     }
 }

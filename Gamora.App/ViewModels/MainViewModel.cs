@@ -5,7 +5,9 @@ using System.Windows.Data;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Gamora.App.ViewModels.Admin;
 using Gamora.Core.Abstractions;
+using Gamora.Core.Models;
 using Gamora.Core.Services;
 using Serilog;
 
@@ -18,6 +20,10 @@ public partial class MainViewModel : ObservableObject
     private const int PopularBadgeCount = 10;
 
     private static readonly TimeSpan OverlayErrorAutoDismiss = TimeSpan.FromSeconds(4);
+
+    // Fallback cümlesi ("Steam açılıyor — oyunu kütüphaneden başlatabilirsiniz.") tek bir oyun
+    // adından uzun; okunacak kadar ekranda kalması için asgari bir süre.
+    private static readonly TimeSpan FallbackOverlayMinimumDuration = TimeSpan.FromSeconds(2);
 
     private readonly ICatalogService _catalogService;
     private readonly ISettingsService _settingsService;
@@ -53,9 +59,20 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private string _overlayErrorMessage = "";
 
+    // Hedefsiz steam/riot/battlenet/epic oyunları: belirli bir oyunu değil platformun kendisini
+    // açar (bkz. GameEditViewModel'deki "kodu bilmiyorum" seçeneği) — overlay'de "BAŞLATILIYOR
+    // + ad" yerine bunu açıklayan tek bir cümle gösterilir.
+    [ObservableProperty]
+    private bool _isOverlayFallback;
+
+    [ObservableProperty]
+    private string _overlayFallbackMessage = "";
+
     // IsOverlayError'ın tersi — XAML'de BooleanToVisibilityConverter'ın ConverterParameter ile
     // ters çalışmasını beklemek yerine (desteklemiyor), ayrı bir hesaplanan property.
     public bool IsOverlayLaunching => !IsOverlayError;
+
+    public bool IsOverlayNormalLaunch => !IsOverlayFallback;
 
     // Games'in filtrelenmiş görünümü. ICollectionView (CollectionViewSource.GetDefaultView)
     // seçildi çünkü: (1) arama/kategori değiştiğinde ikinci bir ObservableCollection'ı elle
@@ -155,6 +172,11 @@ public partial class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(IsOverlayLaunching));
     }
 
+    partial void OnIsOverlayFallbackChanged(bool value)
+    {
+        OnPropertyChanged(nameof(IsOverlayNormalLaunch));
+    }
+
     [RelayCommand]
     private void ClearSearch()
     {
@@ -168,13 +190,30 @@ public partial class MainViewModel : ObservableObject
     {
         IsOverlayVisible = false;
         IsOverlayError = false;
+        IsOverlayFallback = false;
     }
 
     private async Task LaunchGameAsync(GameViewModel game)
     {
+        // Hedefsiz steam/riot/battlenet/epic: strateji oyunu değil platformun kendisini açacak
+        // (bkz. SteamLaunchStrategy vb.) — overlay'de buna göre farklı bir metin gösterilir.
+        var isFallback = game.Model.LaunchType != LaunchType.Exe && string.IsNullOrWhiteSpace(game.Model.LaunchTarget);
+
         OverlayGameName = game.Name;
+        IsOverlayFallback = isFallback;
+        OverlayFallbackMessage = isFallback
+            ? $"{PlatformLabel(game.Model.LaunchType)} açılıyor — oyunu kütüphaneden başlatabilirsiniz."
+            : "";
         IsOverlayError = false;
         IsOverlayVisible = true;
+
+        // IsOverlayVisible=true'dan hemen sonra çağrılan GameLauncher.LaunchAsync zinciri
+        // (ayarlar önbellekte, Process.Start Task.FromResult ile senkron döner) hiç gerçek bir
+        // asenkron beklemeye uğramıyor — UI thread mesaj döngüsüne dönmeden bu metod baştan sona
+        // tek seferde koşabiliyor ve WPF overlay'i boyayacak bir kare bile bulamıyordu.
+        // Dispatcher.Yield(Background) bekleyen render işinin (DispatcherPriority.Render,
+        // Background'dan yüksek öncelikli) önce işlenmesini garantiler.
+        await Dispatcher.Yield(DispatcherPriority.Background);
 
         var result = await _gameLauncher.LaunchAsync(game.Model);
 
@@ -191,6 +230,13 @@ public partial class MainViewModel : ObservableObject
             }
 
             return;
+        }
+
+        if (isFallback)
+        {
+            // Platform açma URI'leri (steam://, battlenet:// vb.) neredeyse anında dönüyor;
+            // cümle okunmadan overlay kapanıp pencere küçülmesin diye asgari süre kadar bekle.
+            await Task.Delay(FallbackOverlayMinimumDuration);
         }
 
         IsOverlayVisible = false;
@@ -212,6 +258,9 @@ public partial class MainViewModel : ObservableObject
             SetWindowState(WindowState.Normal);
         }
     }
+
+    private static string PlatformLabel(LaunchType launchType) =>
+        GameEditViewModel.LaunchTypeOptions.First(o => o.Value == launchType).Label;
 
     private static void SetWindowState(WindowState state)
     {

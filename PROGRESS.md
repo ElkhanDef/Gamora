@@ -205,9 +205,34 @@ Kısa, tarihli günlük. Her önemli adımdan sonra güncellenir.
   oysa şu an sadece admin iskeleti (üç boş bölüm başlığı) var — başına "henüz yapım aşamasında"
   notu ekledim. Belgenin tonu/yapısı korunuyor, [PİLOT ÖNCESİ NETLEŞECEK] işaretlerine dokunmadım.
 
+## 2026-07-28 — Admin "Oyunlar": liste + ekle/düzenle/sil, platform fallback
+
+- **Oyun CRUD:** `GameListViewModel`/`GameEditViewModel`/`GameRowViewModel` — liste ayrı pencere
+  değil, `AdminMainWindow` içinde `ContentControl` + DataTemplate ile liste↔form geçişi.
+  Arama müşteri tarafındaki `TurkishSearch`'ü aynen kullanıyor. Silme WPF-UI `MessageBox` ile
+  onaylı; kapak dosyasına dokunmuyor. `GameIdGenerator` (Core) adı slug'lar, çakışmada `-2/-3`.
+- **PathResolver bugfix:** "Gözat" ile seçilen mutlak yol `{GAMEDISK}`'e hiç çevrilmiyordu —
+  `settings.json`'daki `gameDisk` `/` ile, dosya diyaloğu `\` ile döndüğü için `StartsWith` hiç
+  tutmuyordu. Ayrıca sondaki `\` ve komşu-klasör (`C:\GamoraData` / `C:\GamoraDataOther`) yanlış
+  eşleşme riskini de düzelttim. `Path.GetFullPath` kullanmadım — bariz sürücü harfini (`G:`)
+  çalışma dizinine göre çözüp öngörülemez sonuç verebiliyor.
+- **Platform fallback:** steam/riot/battlenet/epic'te `launchTarget` artık opsiyonel — boşsa
+  ilgili `LaunchStrategy` oyunu değil platformun kendisini açar (`steam://open/main`, çıplak
+  `battlenet://`/`com.epicgames.launcher://`, argümansız Riot Client). `GameEditView`'da "kodu
+  bilmiyorum" kutusu var; işaretlenince hedef alanı pasifleşir. Müşteri overlay'i bu durumda
+  "[Platform] açılıyor — oyunu kütüphaneden başlatabilirsiniz." gösteriyor. Test modunda
+  "[TEST] platform fallback: {Platform} açılacaktı" loglanıyor.
+- **Test edilebilirlik:** `LaunchStrategyBase.BuildCommand` `protected` yerine `internal` oldu
+  (`Gamora.Core/AssemblyInfo.cs`'teki `InternalsVisibleTo`) — gerçek process başlatmadan
+  komutu doğrudan test edebilmek için.
+- **Doğrulama:** `dotnet build`/`test` temiz (54/54). Gerçek uygulamada (UI Automation ile
+  tıklayarak): liste + arama + ekle/düzenle/sil tam döngüsü, alan doğrulamaları (mor metin),
+  Steam AppID sayısal kontrolü, fallback kutusu + alan pasifleşmesi, `catalog.json`'da boş
+  `launchTarget`, test modunda doğru log + notepad açılışı — hepsi gözlemlendi. Native "Gözat"
+  penceresini otomasyonla açamadım (kullanıcı ortamında görünmüyor); o adım kullanıcı tarafından
+  elle doğrulandı.
+
 ### Sıradaki adımlar (henüz yapılmadı)
-- Admin modu içerikleri: oyun CRUD, kapak yükleme, istatistik ekranı, ayarlar ekranı
-  (tamamlandıkça KURULUM.md Bölüm 3'ü güncellenmeli).
-- Riot/battlenet/epic başlatmayı, oyun başlatma overlay'ini ve popüler rozetini kullanıcı
-  gözüyle doğrulama.
+- Kapak yükleme (admin formunda "Kapak Seç"), istatistik ekranı, ayarlar ekranı.
+- Riot/battlenet/epic gerçek başlatmayı (test modu dışında) donanımda doğrulama.
 - Giriş ekranındaki 3-deneme/30sn kilitlenmeyi ve tüm şifre ekranlarının görselini doğrulama.

@@ -7,7 +7,7 @@ public sealed class ExeLaunchStrategy(IPathResolver pathResolver) : LaunchStrate
 {
     public override LaunchType LaunchType => LaunchType.Exe;
 
-    protected override LaunchCommand BuildCommand(Game game, LauncherSettings settings)
+    internal override LaunchCommand BuildCommand(Game game, LauncherSettings settings)
     {
         var resolvedPath = pathResolver.Resolve(game.LaunchTarget, settings);
         return new LaunchCommand(resolvedPath, game.Args, game.WorkingDir);

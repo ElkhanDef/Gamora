@@ -41,6 +41,11 @@ public partial class GameEditViewModel : ObservableObject
     [ObservableProperty]
     private string _launchTarget = "";
 
+    // Yalnızca steam/riot/battlenet/epic'te anlamlı: işaretlenince hedef alanı pasifleşir ve
+    // boş kaydedilir — ilgili strateji belirli bir oyunu değil platformun kendisini açar.
+    [ObservableProperty]
+    private bool _usePlatformFallback;
+
     [ObservableProperty]
     private string _workingDir = "";
 
@@ -95,7 +100,7 @@ public partial class GameEditViewModel : ObservableObject
     // steamdb.info Steam'in kendi sitesi değil ama AppID aramak için kafe teknisyenleri
     // arasında yaygın kullanılan bir bilgi kaynağı — DEVELOPMENT.md launchTarget şemasında
     // Steam için sayısal AppID istiyor.
-    public string? TargetHint => SelectedLaunchType switch
+    public string? TargetHint => UsePlatformFallback ? null : SelectedLaunchType switch
     {
         LaunchType.Steam => "steamdb.info'dan bulabilirsiniz.",
         LaunchType.Riot => "Örn. valorant, lor.",
@@ -105,6 +110,17 @@ public partial class GameEditViewModel : ObservableObject
     };
 
     public bool ShowBrowseButton => SelectedLaunchType == LaunchType.Exe;
+
+    // Exe'de "kodu bilmiyorum" seçeneğinin bir karşılığı yok — yerel programın yolu zaten
+    // zorunlu. Diğer dört tipte bu seçenek görünür.
+    public bool ShowPlatformFallbackOption => SelectedLaunchType != LaunchType.Exe;
+
+    public bool IsTargetFieldEnabled => !UsePlatformFallback;
+
+    public string PlatformFallbackCheckboxLabel =>
+        $"Kodu bilmiyorum — tıklanınca {CurrentLaunchTypeLabel} açılsın, müşteri oyunu oradan başlatsın";
+
+    private string CurrentLaunchTypeLabel => LaunchTypeOptions.First(o => o.Value == SelectedLaunchType).Label;
 
     public event EventHandler? Saved;
 
@@ -126,6 +142,7 @@ public partial class GameEditViewModel : ObservableObject
             SelectedCategory = game.Category;
             SelectedLaunchType = game.LaunchType;
             LaunchTarget = game.LaunchTarget;
+            UsePlatformFallback = game.LaunchType != LaunchType.Exe && string.IsNullOrWhiteSpace(game.LaunchTarget);
             WorkingDir = game.WorkingDir ?? "";
             Args = game.Args ?? "";
             IsVisible = game.Visible;
@@ -143,10 +160,30 @@ public partial class GameEditViewModel : ObservableObject
 
     partial void OnSelectedLaunchTypeChanged(LaunchType value)
     {
+        if (value == LaunchType.Exe)
+        {
+            // Exe'de bu seçeneğin karşılığı yok; tip değiştirildiğinde sessizce takılı kalmasın.
+            UsePlatformFallback = false;
+        }
+
         OnPropertyChanged(nameof(TargetLabel));
         OnPropertyChanged(nameof(TargetHint));
         OnPropertyChanged(nameof(ShowBrowseButton));
+        OnPropertyChanged(nameof(ShowPlatformFallbackOption));
+        OnPropertyChanged(nameof(PlatformFallbackCheckboxLabel));
         TargetError = null;
+    }
+
+    partial void OnUsePlatformFallbackChanged(bool value)
+    {
+        OnPropertyChanged(nameof(IsTargetFieldEnabled));
+        OnPropertyChanged(nameof(TargetHint));
+        TargetError = null;
+
+        if (value)
+        {
+            LaunchTarget = "";
+        }
     }
 
     partial void OnNameChanged(string value)
@@ -188,17 +225,21 @@ public partial class GameEditViewModel : ObservableObject
             return;
         }
 
-        var target = LaunchTarget.Trim();
-        if (string.IsNullOrWhiteSpace(target))
-        {
-            TargetError = $"{TargetLabel} boş olamaz.";
-            return;
-        }
+        var target = UsePlatformFallback ? "" : LaunchTarget.Trim();
 
-        if (SelectedLaunchType == LaunchType.Steam && !int.TryParse(target, out _))
+        if (!UsePlatformFallback)
         {
-            TargetError = "Steam AppID sayısal olmalı (ör. 730).";
-            return;
+            if (string.IsNullOrWhiteSpace(target))
+            {
+                TargetError = $"{TargetLabel} boş olamaz.";
+                return;
+            }
+
+            if (SelectedLaunchType == LaunchType.Steam && !int.TryParse(target, out _))
+            {
+                TargetError = "Steam AppID sayısal olmalı (ör. 730).";
+                return;
+            }
         }
 
         var category = SelectedCategory.Trim();

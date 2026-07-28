@@ -60,7 +60,7 @@
                           SelectedValue="{Binding SelectedLaunchType}" />
 
                 <TextBlock Text="{Binding TargetLabel}" Style="{StaticResource FieldLabelStyle}" />
-                <Grid>
+                <Grid IsEnabled="{Binding IsTargetFieldEnabled}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
@@ -86,6 +86,16 @@
                            Style="{StaticResource FieldNoteStyle}"
                            Foreground="{StaticResource AccentBrush}"
                            Visibility="{Binding TargetError, Converter={StaticResource NullToVisibilityConverter}}" />
+
+                <CheckBox IsChecked="{Binding UsePlatformFallback}"
+                          Margin="0,10,0,0"
+                          Visibility="{Binding ShowPlatformFallbackOption, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <TextBlock Text="{Binding PlatformFallbackCheckboxLabel}"
+                               TextWrapping="Wrap"
+                               MaxWidth="480"
+                               FontSize="12"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                </CheckBox>
 
                 <ui:CardExpander Header="Gelişmiş"
                                   IsExpanded="{Binding IsAdvancedExpanded}"

@@ -289,17 +289,31 @@
                             </Ellipse.Triggers>
                         </Ellipse>
                     </StackPanel>
-                    <TextBlock Text="BAŞLATILIYOR"
+                    <StackPanel HorizontalAlignment="Center"
+                                Visibility="{Binding IsOverlayNormalLaunch, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <TextBlock Text="BAŞLATILIYOR"
+                                   FontFamily="{StaticResource RajdhaniFont}"
+                                   FontSize="16"
+                                   Foreground="{StaticResource AccentBrush}"
+                                   HorizontalAlignment="Center"
+                                   Margin="0,16,0,4" />
+                        <TextBlock Text="{Binding OverlayGameName}"
+                                   FontFamily="{StaticResource RajdhaniFont}"
+                                   FontSize="28"
+                                   Foreground="White"
+                                   HorizontalAlignment="Center" />
+                    </StackPanel>
+
+                    <!-- Hedefsiz steam/riot/battlenet/epic: belirli oyun değil, platformun
+                         kendisi açılıyor (bkz. GameEditView "kodu bilmiyorum" seçeneği). -->
+                    <TextBlock Text="{Binding OverlayFallbackMessage}"
                                FontFamily="{StaticResource RajdhaniFont}"
-                               FontSize="16"
-                               Foreground="{StaticResource AccentBrush}"
-                               HorizontalAlignment="Center"
-                               Margin="0,16,0,4" />
-                    <TextBlock Text="{Binding OverlayGameName}"
-                               FontFamily="{StaticResource RajdhaniFont}"
-                               FontSize="28"
+                               FontSize="22"
                                Foreground="White"
-                               HorizontalAlignment="Center" />
+                               TextAlignment="Center"
+                               TextWrapping="Wrap"
+                               Margin="0,16,0,0"
+                               Visibility="{Binding IsOverlayFallback, Converter={StaticResource BoolToVisibilityConverter}}" />
                 </StackPanel>
 
                 <StackPanel HorizontalAlignment="Center"

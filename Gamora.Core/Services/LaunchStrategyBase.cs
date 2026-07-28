@@ -9,7 +9,9 @@ public abstract class LaunchStrategyBase : ILaunchStrategy
 {
     public abstract LaunchType LaunchType { get; }
 
-    protected abstract LaunchCommand BuildCommand(Game game, LauncherSettings settings);
+    // internal (protected değil): Gamora.Core.Tests, gerçek bir process başlatmadan komutun ne
+    // üreteceğini doğrudan doğrulayabilsin diye (bkz. AssemblyInfo.cs'teki InternalsVisibleTo).
+    internal abstract LaunchCommand BuildCommand(Game game, LauncherSettings settings);
 
     public Task<LaunchResult> LaunchAsync(Game game, LauncherSettings settings, CancellationToken cancellationToken = default)
     {
@@ -29,7 +31,15 @@ public abstract class LaunchStrategyBase : ILaunchStrategy
         // doğrulamak için.
         if (settings.TestMode)
         {
-            Log.Information("[TEST] {Command} çalıştırılacaktı", command.Describe());
+            if (command.IsPlatformFallback)
+            {
+                Log.Information("[TEST] platform fallback: {Platform} açılacaktı", command.FallbackPlatformLabel ?? command.Describe());
+            }
+            else
+            {
+                Log.Information("[TEST] {Command} çalıştırılacaktı", command.Describe());
+            }
+
             command = LaunchCommand.ForFile("notepad.exe");
         }
 

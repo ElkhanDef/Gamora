@@ -9,8 +9,15 @@ public sealed class EpicLaunchStrategy : LaunchStrategyBase
 {
     public override LaunchType LaunchType => LaunchType.Epic;
 
-    protected override LaunchCommand BuildCommand(Game game, LauncherSettings settings)
+    internal override LaunchCommand BuildCommand(Game game, LauncherSettings settings)
     {
+        // Uygulama kodu girilmemişse çıplak com.epicgames.launcher:// açar — Epic Games Launcher
+        // gelir, müşteri oyunu kütüphaneden kendisi başlatır.
+        if (string.IsNullOrWhiteSpace(game.LaunchTarget))
+        {
+            return new LaunchCommand("com.epicgames.launcher://", UseShellExecute: true, IsPlatformFallback: true, FallbackPlatformLabel: "Epic Games");
+        }
+
         return new LaunchCommand($"com.epicgames.launcher://apps/{game.LaunchTarget}?action=launch&silent=true", UseShellExecute: true);
     }
 }
