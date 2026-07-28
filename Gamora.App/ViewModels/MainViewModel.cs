@@ -23,7 +23,7 @@ public partial class MainViewModel : ObservableObject
 
     // Fallback cümlesi ("Steam açılıyor — oyunu kütüphaneden başlatabilirsiniz.") tek bir oyun
     // adından uzun; okunacak kadar ekranda kalması için asgari bir süre.
-    private static readonly TimeSpan FallbackOverlayMinimumDuration = TimeSpan.FromSeconds(2);
+    private static readonly TimeSpan FallbackOverlayMinimumDuration = TimeSpan.FromSeconds(4);
 
     private readonly ICatalogService _catalogService;
     private readonly ISettingsService _settingsService;
